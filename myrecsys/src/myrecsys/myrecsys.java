@@ -16,13 +16,77 @@ public class myrecsys {
 			System.out.println("Format: java myrecsys training.data test.data algorithm-name");
 			System.exit(1);
 		}
+		
+		testRatings = new HashMap<Integer, ArrayList<Rating>>();
+		ratingsByUser = new HashMap<Integer, ArrayList<Rating>>();
+		ratingsByMovie = new HashMap<Integer, ArrayList<Rating>>();
+		
+		switch(args[2].toLowerCase()) {
+			case "average":			
+				parseRatingsFiles("movie", args[0], args[1]);
+				average();				
+				err = rmse();
+				break;
+			case "user-euclidean":
+				parseRatingsFiles("user", args[0], args[1]);
+				userEuclidean();
+				err = rmse();
+				break;
+			case "user-pearson":
+				parseRatingsFiles("user", args[0], args[1]);
+				userPearson();
+				err = rmse();
+				break;
+			case "item-cosine":
+				parseRatingsFiles("movie", args[0], args[1]);
+				itemCosine();
+				err = rmse();
+				break;
+			case "item-adcosine":
+				parseRatingsFiles("movie", args[0], args[1]);
+				itemAdCosine();
+				err = rmse();
+				break;
+			case "slope-one":
+				parseRatingsFiles("user", args[0], args[1]);
+				slopeOne();
+				err = rmse();
+				break;
+			default:
+				System.out.println("Invalid algorithm: \'%s\' does not exist.");
+				System.exit(4);
+		}
 			
 		System.out.printf("MYRESULTS Training \t= %s\n", args[0]);
 		System.out.printf("MYRESULTS Testing \t= %s\n", args[1]);
 		System.out.printf("MYRESULTS Algorithm \t= %s\n", args[2]);
 		System.out.printf("MYRESULTS RMSE \t\t= %.6f\n", err);
 	}
+	
+	static void average() {
+		
+	}
+	
+	static void userEuclidean() {
+		
+	}
+	
+	static void userPearson() {
+		
+	}
+	
+	static void itemCosine() {
+		
+	}
+	
+	static void itemAdCosine() {
+		
+	}
 
+	static void slopeOne() {
+		
+	}
+	
 	static int parseIntCheck(String s) {		// parse the strings into integer values, and ensure that it won't crash if there's an issue.
 		try {
 			return Integer.parseInt(s);
@@ -101,7 +165,6 @@ public class myrecsys {
 			System.exit(3);
 		}
 	}
-	
 	
 	static double rmse() {											
 		double sum = 0;						// sum - sum of differences between predicted ratings and actual ratings, squared.
