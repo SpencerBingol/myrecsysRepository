@@ -84,7 +84,65 @@ public class myrecsys {
 	}
 	
 	static void userEuclidean() {
+		double sim=0, distTotal=0, weightTotal=0, simTotal=0;						// sim - similarity value. distTotal - total manhattan distance btwn two users.
+		double[][] matrix = new double[ratingsByUser.size()][ratingsByUser.size()];	// weightTotal - denominator of predicted value formula. simTotal - numerator of PV formula.
+		HashMap<Integer, Integer> labels = new HashMap<Integer, Integer>(); 		// matrix - 2D matrix of user similarity values. labels - hashMap mapping users to indices in matrix.
+		boolean[][] setMatrix = new boolean[ratingsByUser.size()][ratingsByUser.size()]; // used to denote if a similarity comparison has been done.
+																						 // uses extra memory, but prevents duplicating comparisons where similarity is '0'.
+		for (int i=0; i < ratingsByUser.size(); i++) {								
+			labels.put((int) ratingsByUser.keySet().toArray()[i], i);				// add entry to labels mapping each user to an index by order of appearance
+		}
 		
+		for (int i : testRatings.keySet()) {										// for each user in the test data
+			for (int j : ratingsByUser.keySet()) {									// compare to every user in the training data
+				distTotal = 0;
+				sim = 0;
+				boolean match = false;												// set to 'true' if at least one film is a match.
+				
+				if ((j!=i) && (setMatrix[labels.get(i)][labels.get(j)] == false)) {	// if they are not the same user, and do not currently have a similarity score
+					ArrayList<Rating> tmp1 = ratingsByUser.get(i);					// set each to a temporary arraylist of their ratings to find films reviewed in common
+					ArrayList<Rating> tmp2 = ratingsByUser.get(j);
+					
+					if (tmp1.size() > tmp2.size()) {								// make sure to iterate through the shorter review history (films must appear in both lists regardless).
+						tmp1 = ratingsByUser.get(j);								
+						tmp2 = ratingsByUser.get(i);								
+						
+						for (Rating r1 : tmp1) {									// for each rating by user 1
+							for (Rating r2 : tmp2) {								// compare to each rating by user 2
+								if (r1.getMovie()==r2.getMovie()) {					// if the same film exists in both review histories
+									distTotal+=Math.abs(r1.getRating() - r2.getRating());	// add the absolute value of u1 rating - u2 rating
+									match = true;
+									break;											// break the loop.
+								}
+							}
+						}
+					}
+					
+					sim = 1 / (1 + distTotal);										// similarity score = 1 / (1 + total distance of all films shared by both users).
+					if (match == true) {
+						matrix[labels.get(i)][labels.get(j)] = sim;					// set these values to the similarity score, if there has been at least one match
+						matrix[labels.get(j)][labels.get(i)] = sim;					// otherwise, retain similarity value of 0
+					} 
+					
+					setMatrix[labels.get(i)][labels.get(j)] = true;					// set 'compared' flag to true for this combination.
+					setMatrix[labels.get(j)][labels.get(i)] = true;
+				}
+			}
+			
+			for (Rating r1 : testRatings.get(i)) {									// for each review by the user in the test data
+				simTotal = 0;
+				weightTotal = 0;
+				int movie = r1.getMovie();						
+				if (ratingsByMovie.containsKey(movie)) {							// if this film exists in the training data
+					for (Rating r2 : ratingsByMovie.get(movie)) {					// for each review of this film in the training data
+						if (matrix[labels.get(i)][labels.get(r2.getUser())]!=0) {	// if the similarity score is greater than zero 
+							simTotal += matrix[labels.get(i)][labels.get(r2.getUser())] * r2.getRating();	// add (similarity score * user2's rating to similarity score total.
+							weightTotal += matrix[labels.get(i)][labels.get(r2.getUser())];					//add the similarity score to the weight total.
+						}
+					} if (weightTotal>0) r1.setPredicted(simTotal/weightTotal);		// if the weightTotal isn't zero, set the new predicted value. 
+				}
+			}
+		}
 	}
 	
 	static void userPearson() {
