@@ -1,6 +1,16 @@
 package myrecsys;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class myrecsys {
+	static HashMap<Integer, ArrayList<Rating>> testRatings;
+	static HashMap<Integer, ArrayList<Rating>> ratingsByUser;
+	static HashMap<Integer, ArrayList<Rating>> ratingsByMovie;
+	
+ 	static double err = 0;
+ 	
 	public static void main(String[] args) {
 		if (args.length != 3) {
 			System.out.println("Format: java myrecsys training.data test.data algorithm-name");
@@ -10,7 +20,15 @@ public class myrecsys {
 		System.out.printf("MYRESULTS Training \t= %s\n", args[0]);
 		System.out.printf("MYRESULTS Testing \t= %s\n", args[1]);
 		System.out.printf("MYRESULTS Algorithm \t= %s\n", args[2]);
-		System.out.printf("MYRESULTS RMSE \t\t= %.6f\n", 0.0);
+		System.out.printf("MYRESULTS RMSE \t\t= %.6f\n", err);
+	}
+
+	static int parseIntCheck(String s) {		// parse the strings into integer values, and ensure that it won't crash if there's an issue.
+		try {
+			return Integer.parseInt(s);
+		} catch (NumberFormatException e) {
+			return -1;
+		}
 	}
 	
 	static class Rating {
