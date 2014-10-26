@@ -216,8 +216,7 @@ public class myrecsys {
 			}
 		}
 	}
-	
-	
+		
 	static void itemCosine() {
 		double aSqSum=0, bSqSum=0, ab=0, denom=0, sim=0;	
 		double[][] matrix = new double[ratingsByMovie.size()][ratingsByMovie.size()];
@@ -284,7 +283,6 @@ public class myrecsys {
 			}
 		}
 	}
-	
 	
 	static void itemAdCosine() {
 		double aSqSum=0, bSqSum=0, ab=0, denom=0, sim=0, avg=0;	
@@ -358,9 +356,71 @@ public class myrecsys {
 		}
 	}
 	
-	
 	static void slopeOne() {
+		double total=0, totalCount=0, intSum=0, a=0, b=0;
+		int intCount=0;
+		boolean movieA=false, movieB=false;
+		double[][] diff = new double[ratingsByMovie.size()][ratingsByMovie.size()];
+		int[][] count = new int[ratingsByMovie.size()][ratingsByMovie.size()];
+		boolean[][] compared = new boolean[ratingsByMovie.size()][ratingsByMovie.size()];
+		HashMap<Integer, Integer> labels = new HashMap<Integer, Integer>();
 		
+		for (int i=0; i < ratingsByMovie.size(); i++) {								
+			labels.put((int) ratingsByMovie.keySet().toArray()[i], i);				// add entry to labels mapping each user to an index by order of appearance
+		}
+		
+		for (int user : testRatings.keySet()) {
+			for (Rating r1 : testRatings.get(user)) {
+				total=0;
+				totalCount=0;
+				for (Rating r2 : ratingsByUser.get(user)) {	
+					if (ratingsByMovie.containsKey(r1.getMovie()) && !(r1.getMovie()==r2.getMovie()) && !compared[labels.get(r1.getMovie())][labels.get(r2.getMovie())]) {
+						intCount = 0;
+						intSum = 0;
+						
+						for (int otherUser : ratingsByUser.keySet()) {
+							movieA = false; movieB = false;
+							a = 0; b = 0;
+							
+							if (ratingsByUser.containsKey(otherUser)) {
+								for (Rating r3 : ratingsByUser.get(otherUser)) {
+									if (r3.getMovie()==r1.getMovie() && movieA==false) {
+										a = r3.getRating();
+										movieA=true;
+									} else if (r3.getMovie() == r2.getMovie() && movieB == false) {
+										b=r3.getRating();
+										movieB=true;
+									}
+									
+									if (movieA && movieB) {
+										intCount++;
+										intSum+=(a-b);
+										break;
+									}
+								}
+							}
+						}
+						
+						if(!(intCount==0)) {
+							diff[labels.get(r1.getMovie())][labels.get(r2.getMovie())] = intSum/intCount;
+							count[labels.get(r1.getMovie())][labels.get(r2.getMovie())] = intCount;
+						}
+						compared[labels.get(r1.getMovie())][labels.get(r2.getMovie())] = true;
+						compared[labels.get(r2.getMovie())][labels.get(r1.getMovie())] = true;
+						
+					}
+					
+					if(ratingsByMovie.containsKey(r1.getMovie())) {
+						totalCount += count[labels.get(r1.getMovie())][labels.get(r2.getMovie())];
+						total += (r2.getRating() + diff[labels.get(r1.getMovie())][labels.get(r2.getMovie())]) * count[labels.get(r1.getMovie())][labels.get(r2.getMovie())];
+						//System.out.println(r2.getRating() + "|" + diff[labels.get(r1.getMovie())][labels.get(r2.getMovie())] + "|" + count[labels.get(r1.getMovie())][labels.get(r2.getMovie())]);
+					
+					}
+				}			
+				
+				if (totalCount > 0) r1.setPredicted(total/totalCount);
+			}
+		}
 	}
 	
 	static int parseIntCheck(String s) {		// parse the strings into integer values, and ensure that it won't crash if there's an issue.
