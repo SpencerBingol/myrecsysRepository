@@ -64,7 +64,23 @@ public class myrecsys {
 	}
 	
 	static void average() {
-		
+		int count;												// count - Number of ratings about a given movie
+		double avg, total;										// total - Cumulative sum of rating values (1-5). avg - total/count 
+		for (int movie : testRatings.keySet()) {				// for each movie in the test data
+			count = 0;
+			total = 0;
+			avg = 0;
+			if (ratingsByMovie.containsKey(movie)) {			// if reviews for this movie also exist in the training data
+				for (Rating r : ratingsByMovie.get(movie)) {	// get all reviews for this movie							
+					total += r.getRating();						// add movie rating to total
+					count++;
+				} avg = total / count;							// calculate average
+							
+				for (Rating r : testRatings.get(movie)) {		// for every test data review	
+					r.setPredicted(avg);						// add a predicted value to compare to the actual.
+				}
+			}
+		}
 	}
 	
 	static void userEuclidean() {
